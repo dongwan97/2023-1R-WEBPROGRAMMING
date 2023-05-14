@@ -104,7 +104,7 @@ function Worldcup() {
             fontWeight: "bold",
             position: "relative",
             left: 0,
-            top: 50,
+            top: 150,
             zIndex: 4,
           }}
         >
