@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 // assets/react.svg에서 reactLogo를 가져온다.
 import viteLogo from "/vite.svg";
@@ -6,8 +6,21 @@ import "./App.css";
 
 function App() {
   const [row, setRow] = useState([]);
+  const [count, setCount] = useState(0);
 
-  function handleButtonClick() {
+  useEffect(() => {
+    console.log("mount or updata");
+
+    return () => {
+      console.log("unmount");
+    };
+  });
+
+  const htmlTitle = document.querySelector("title"); // <title> 태그 찾기
+  htmlTitle.innerHTML = count;
+
+  useEffect(() => {
+    console.log("mount only");
     if (row.length === 0) {
       fetch(
         "http://openapi.seoul.go.kr:8088/6c5462437265686439375a52657474/json/RealtimeCityAir/1/25/"
@@ -17,7 +30,12 @@ function App() {
         });
       });
     }
-  }
+  }, []);
+  // 배열의 의미는 업데이트의 감지이다.
+
+  useEffect(() => {
+    console.log("updata only", row);
+  }, [row]);
 
   console.log(row);
 
@@ -32,7 +50,7 @@ function App() {
         </a>
       </div>
       <h1>Vite + wandong</h1>
-      <button onClick={handleButtonClick}>로딩중</button>
+      <button>로딩중</button>
       {row.length > 0 && (
         <table>
           <thead>
@@ -44,13 +62,13 @@ function App() {
             </tr>
           </thead>
           <tbody>
-            {row.map(function (obj, index) {
+            {row.map((gu, index) => {
               return (
                 <tr key={index}>
-                  <td>{obj.MSRSTE_NM}</td>
-                  <td>{obj.PM10}</td>
-                  <td>{obj.O3}</td>
-                  <td>{obj.IDEX_NM}</td>
+                  <td>{gu.MSRSTE_NM}</td>
+                  <td>{gu.PM10}</td>
+                  <td>{gu.O3}</td>
+                  <td>{gu.IDEX_NM}</td>
                 </tr>
               );
             })}
@@ -59,6 +77,10 @@ function App() {
       )}
 
       <div className="card">
+        <button onClick={() => setCount((count) => count + 1)}>
+          count is {count}
+        </button>
+
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
