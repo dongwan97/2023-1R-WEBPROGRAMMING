@@ -43,7 +43,33 @@ function Worldcup() {
   const [round, setRound] = useState(0);
   const [nextGame, setNextGame] = useState([]);
   const [description, setDescription] = useState("");
+  //통계정보를 저장하는 state -> "덴마크" : 0 이런식으로 데이터가 저장될 예정이다.
+  //초반에 카운트가 0임을 알려주기 위해 0으로 초기화
+  const [stat, setStat] = useState({
+    덴마크: 0,
+    독일: 0,
+    미국: 0,
+    베트남: 0,
+    벨기에: 0,
+    스위스: 0,
+    스페인: 0,
+    영국: 0,
+    오스트리아: 0,
+    이탈리아: 0,
+    일본: 0,
+    체코: 0,
+    터키: 0,
+    포르투칼: 0,
+    프랑스: 0,
+    헝가리: 0,
+  });
+  const [sortedKeys, setSortedKeys] = useState([]);
 
+  useEffect(() => {
+    if (game.length > 1) {
+      setSortedKeys(Object.keys(stat).sort((a, b) => stat[b] - stat[a]));
+    }
+  }, [stat, game]);
   useEffect(() => {
     if (game.length > 0) {
       setDescription("이미지 위에 표시될 내용");
@@ -56,7 +82,13 @@ function Worldcup() {
     setDescription(description);
   };
 
+  //처음 Worldcup 컴포넌트가 단 한번 실행하는 함수
   useEffect(() => {
+    //시작할 때 브라우저 저장소에서 숫자로 변환한 월드컵 데이터를 가져온다.
+    const 문자열 = localStorage.getItem("2020113297");
+    if (문자열 !== null) {
+      setStat(JSON.parse(문자열));
+    }
     setGame(
       candidate
         .map((c) => {
@@ -77,18 +109,82 @@ function Worldcup() {
   }, [round]);
 
   if (game.length === 1) {
+    //브라우저 저장소에 저장
+    localStorage.setItem("2020113297", JSON.stringify(stat));
     return (
       <div>
         <h3>이상형 월드컵 우승</h3>
         <img src={game[0].src} />
         <p>{game[0].name}</p>
+        <p>{stat[game[0].name]}번 승리</p>
+
+        <table>
+          {sortedKeys.map((name) => (
+            <tr key={name}>
+              <td>{name}</td>
+              <td>{stat[name]}</td>
+              <td>
+                <div
+                  style={{
+                    width: `${(stat[name] / game.length) * 100}%`,
+                    height: "20px",
+                    backgroundColor: "blue",
+                  }}
+                ></div>
+              </td>
+            </tr>
+          ))}
+        </table>
+
+        {/* <table>
+          {game.map((item) => {
+            const name = item.name;
+            const src = item.src;
+            const win = stat[name];
+            return (
+              <tr key={name}>
+                <td>
+                  <img src={src} />
+                </td>
+                <td>{name}</td>
+                <td>{win}</td>
+              </tr>
+            );
+          })}
+        </table> */}
       </div>
     );
   }
 
   if (game.length === 0 || round + 1 > game.length / 2)
     return <p>로딩중입니다.</p>;
+  const left = round * 2,
+    right = round * 2 + 1;
+  console.log(stat);
 
+  const leftFunction = () => {
+    console.log("left Function");
+    // ...stat , 배수지:7 이런식으로 하면 기존 stat에 배수지:7이 덮어씌워진다.
+    setStat({ ...stat, [game[left].name]: stat[game[left].name] + 1 });
+    // setStat((prevStat) => {
+    //   prevStat[game[left].name] = prevStat[game[left].name] + 1;
+    //   return prevStat;
+    // });
+    setNextGame((prev) => prev.concat(game[left]));
+    setRound((round) => round + 1);
+    handleClick(left);
+  };
+
+  const rightFunction = () => {
+    setStat({ ...stat, [game[right].name]: stat[game[right].name] + 1 });
+    // setStat((prevStat) => {
+    //   prevStat[game[right].name] = prevStat[game[right].name] + 1;
+    //   return prevStat;
+    // });
+    setNextGame((prev) => prev.concat(game[right]));
+    setRound((round) => round + 1);
+    handleClick(right);
+  };
   return (
     <div>
       <div style={{ display: "flex", flexDirection: "column" }}>
@@ -134,15 +230,13 @@ function Worldcup() {
                   textShadow: "2px 2px 2px black",
                 }}
               >
-                {game[round * 2].name}
+                {game[left].name}
               </div>
             </div>
             <img
-              src={game[round * 2].src}
+              src={game[left].src}
               onClick={() => {
-                setNextGame((prev) => prev.concat(game[round * 2]));
-                setRound((round) => round + 1);
-                handleClick(round * 2);
+                leftFunction();
               }}
             />
           </div>
@@ -165,15 +259,13 @@ function Worldcup() {
                   textShadow: "2px 2px 2px black",
                 }}
               >
-                {game[round * 2 + 1].name}
+                {game[right].name}
               </div>
             </div>
             <img
-              src={game[round * 2 + 1].src}
+              src={game[right].src}
               onClick={() => {
-                setNextGame((prev) => prev.concat(game[round * 2 + 1]));
-                setRound((round) => round + 1);
-                handleClick(round * 2 + 1);
+                rightFunction();
               }}
             />
           </div>
